@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - 6650:80
+    volumes:
+      - ./:/var/www/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - joomla
+  
+  joomla:
+    image: joomla:3.9.5-php7.3-fpm-alpine
+    restart: always
+    environment:
+      - JOOMLA_DB_HOST=db
+      - JOOMLA_DB_USER=postgres
+      - JOOMLA_DB_PASSWORD=postgres
+      - JOOMLA_DB_NAME=db
+    ports:
+      - "6550:6550"
+    volumes:
+      - ./:/var/www/html
+      - ./makedb.php:/makedb.php
+    depends_on:
+      - db
+
+  db:
+    image: postgres:11.2-alpine
+    restart: unless-stopped
+    environment:
+      - PGDATABASE=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGSERVICE=postgres
+    ports:
+      - "6551:6650"
+    volumes:
+      - ./db:/var/lib/postgresql/data
